@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>主界面</title>
+		<link rel="stylesheet" href="layui/css/layui.css" />
+		<script type="text/javascript" src="layui/layui.js" ></script>
+		<script type="text/javascript" src="js/jquery-1.12.2.min.js" ></script>
+	</head>
+	<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+  <div class="layui-header">
+    <div class="layui-logo">视频管理系统</div>
+    <ul class="layui-nav layui-layout-right">
+      <li class="layui-nav-item">
+        <a href="javascript:">
+          <span id="bankCode"></span>
+        </a>
+      </li>
+      <li class="layui-nav-item"><a href="quit.do">注销</a></li>
+    </ul>
+  </div>
+  
+  <div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+      <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+      <ul id="menu" class="layui-nav layui-nav-tree"  lay-filter="test">
+        <li class="layui-nav-item"><a href="findAllVideo.html" target="myframe">房产信息查询</a></li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="layui-body">
+    <iframe name="myframe" width="100%" height="100%" frameborder="0"></iframe>
+  </div>
+  
+  <div class="layui-footer">
+    <!-- 底部固定区域 -->
+    © layui.com - 底部固定区域
+  </div>
+</div>
+<script>
+    //JavaScript代码区域
+    layui.use(['element','layer'], function(){
+        var element = layui.element;
+        var layer = layui.layer;
+
+        $.ajax({
+            type:"get",
+            url:"findUserName.do",
+            dataType:"json",
+            success:function(data){
+                $("#bankCode").html(data);
+            }
+        })
+
+
+    });
+</script>
+</body>
+</html>

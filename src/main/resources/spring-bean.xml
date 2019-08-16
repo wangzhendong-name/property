@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!-- 扫描相关注解 -->
+    <context:component-scan base-package="com.qfedu.service"></context:component-scan>
+
+    <!-- 1 druid数据源 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://localhost:3306/property" />
+        <property name="username" value="root" />
+        <property name="password" value="wang548866" />
+
+        <!-- 配置初始化大小、最小、最大 -->
+        <property name="initialSize" value="1" />
+        <property name="minIdle" value="1" />
+        <property name="maxActive" value="10" />
+        <!-- 配置获取连接等待超时的时间 -->
+        <property name="maxWait" value="10000" />
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="60000" />
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="300000" />
+        <property name="testWhileIdle" value="true" />
+        <!-- 这里建议配置为TRUE，防止取到的连接不可用 -->
+        <property name="testOnBorrow" value="true" />
+        <property name="testOnReturn" value="false" />
+
+    </bean>
+
+    <!-- 2 创建Mybatis的工厂对象 -->
+    <bean id="sqlSessionFactory"
+          class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--设置数据库连接池 -->
+        <property name="dataSource" ref="dataSource"></property>
+        <!-- 加载mybatis主配置文件  classpath 表示classes目录所在路径 -->
+        <property name="configLocation" value="classpath:mybatis.xml"/>
+        <!-- 加载映射文件 -->
+        <property name="mapperLocations" value="classpath:com/qfedu/mapper/*.xml"/>
+    </bean>
+    <!--3设置Mybatis的映射接口 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!-- 设置映射接口所在包 -->
+        <property name="basePackage" value="com.qfedu.dao"></property>
+    </bean>
+
+    <!-- spring事务 -->
+    <!-- 1配置事务管理类
+        注意：使用不同的数据库操作的框架，对应的管理器类不一样
+    -->
+    <bean id="txManage" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <!-- 2配置事务的增强
+        针对不同的切点的方法，设置一些事务处理策略
+        一般是批量配置
+    -->
+    <tx:advice id="txAdvice" transaction-manager="txManage">
+        <tx:attributes>
+            <!--  针对切点对应的方法
+                针对查询， read-only=true 只读
+                针对查询，propagation 传播特性，一般可以设置为SUPPORTS（如果没有事务，该方法不启用事务，如果处于使用事务的方法中，该方法进行事务合并）
+            -->
+            <tx:method name="add*" read-only="false" propagation="REQUIRED" />
+            <tx:method name="delete*" read-only="false" propagation="REQUIRED"></tx:method>
+            <tx:method name="update*" read-only="false" propagation="REQUIRED"></tx:method>
+            <tx:method name="find*" read-only="true" propagation="SUPPORTS"></tx:method>
+            <tx:method name="select*" read-only="true" propagation="SUPPORTS"></tx:method>
+            <tx:method name="login*" read-only="true" propagation="SUPPORTS"></tx:method>
+            <!--  表示没有满足之前方法名配置的方法，不支持事务 -->
+            <tx:method name="*" propagation="NOT_SUPPORTED"></tx:method>
+
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 3AOP配置 -->
+    <aop:config>
+        <!-- 切入点 -->
+        <!-- 针对业务层，增加事务处理的逻辑，切点，针对业务层 -->
+        <aop:pointcut expression="execution(* com.qfedu.service.impl.*.*(..))" id="pc"/>
+
+        <!--  针对事务，不需要配置切面类，因为spring中实现了针对事务的切面类 -->
+        <!-- 通知 -->
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pc"/>
+
+    </aop:config>
+
+</beans>

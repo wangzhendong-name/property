@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>videoAdmin</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+    <script type="text/javascript" src="layui/layui.js"></script>
+    <script type="text/javascript" src="js/jquery-1.12.2.min.js"></script>
+</head>
+<body>
+
+<div class="layui-form demoTable">
+    <div class="layui-row layui-col-space10 layui-form-item" style="margin: 20px;">
+        <div class="layui-form-item">
+            <div class="layui-form searchDiv">
+                <div class="layui-input-inline" style="width: 180px;">
+                    <select name="key" id="keeeey">
+                        <option value="">用户名删选</option>
+                        <option value="userName">产权人</option>
+                        <option value="idNumber">身份证号</option>
+                    </select>
+                </div>
+                <div class="layui-input-inline" style="width: 180px;">
+                    <input type="text" name="content" required lay-verify="required|value" placeholder="请输入关键字"
+                           autocomplete="off" class="layui-input" id="content">
+                </div>
+                <div class="layui-input-inline" style="width: 180px;">
+                    <button type="button" class="layui-btn" data-type="reload">搜索</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<table class="layui-hide" id="test" lay-filter="test"></table>
+<script src="layui/layui.js" charset="utf-8"></script>
+
+<script>
+    layui.use(['layer', 'table', 'element'], function () {
+        var table = layui.table;
+        table.render({
+            elem: '#test'
+            , id: "transferTable"
+            , url: 'findAll.do'
+            , title: '用户数据表'
+            , cols: [[
+                {field: 'id', title: '序号', sort: true, width: 80}
+                , {field: 'projectName', title: '项目名称', width: 160}
+                , {field: 'userName', title: '产权人', width: 624, templet: '<div>{{d.user.userName}}</div>'}
+                , {field: 'idNumber', title: '身份证号', width: 80, templet: '<div>{{d.user.idNumber}}</div>'}
+                , {field: 'housingType', housingType: '房屋类型', width: 80}
+                , {field: 'usableArea', title: '使用面积', sort: true, width: 120}
+                , {field: 'constructionTime', title: '建造时间', sort: true, width: 120}
+            ]]
+            , page: {
+                layout: ['limit', 'count', 'prev', 'page', 'next', 'skip'] //自定义分页布局
+                //,curr: 5 //设定初始在第 5 页
+                , groups: 3 //只显示 1 个连续页码
+                , first: '首页' //不显示首页
+                , last: '尾页' //不显示尾页
+                , limit: 5
+                , limits: [5, 10, 15, 20]
+            }
+        });
+
+        var active = {
+            reload: function () {
+                var type = $("#keeeey").val();
+                var para = $("#content").val();
+                if (type === "userName") {
+                    //执行重载
+                    table.reload('transferTable', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        }
+                        ,where: { // 额外需要提交的参数\
+                            userName: para,
+                            idNumber: ""
+                        }
+                    })
+                } else if (type === "idNumber") {
+                    //执行重载
+                    table.reload('transferTable', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        }
+                        ,where: { // 额外需要提交的参数\
+                            idNumber: para,
+                            userName: ""
+                        }
+                    });
+                }
+            }
+        };
+
+        $('.searchDiv .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+    });
+</script>
+</body>
+</html>

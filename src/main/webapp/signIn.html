@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>添加视频信息</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="layui/css/layui.css"/>
+    <script type="text/javascript" src="layui/layui.js"></script>
+    <script type="text/javascript" src="js/jquery-1.12.2.min.js"></script>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+<form class="layui-form" action="" method="post" onsubmit="return false;" >
+    <div class="layui-form-item">
+        <label class="layui-form-label">身份证号</label>
+        <div class="layui-input-block">
+            <input type="text" name="idNumber" lay-verify="idNumber" autocomplete="off" placeholder="视频名称"
+                   class="layui-input" id="idNumber">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">用户名</label>
+        <div class="layui-input-block">
+            <input type="text" name="userName" lay-verify="userName" autocomplete="off" placeholder="视频名称"
+                   class="layui-input" id="userName">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">密码</label>
+        <div class="layui-input-block">
+            <input type="text" name="password" lay-verify="password" autocomplete="off" placeholder="视频名称"
+                   class="layui-input" id="password">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">确认密码</label>
+        <div class="layui-input-block">
+            <input type="text" name="password1" lay-verify="password1" autocomplete="off" placeholder="视频名称"
+                   class="layui-input" id="rpwd">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn" lay-submit lay-filter="formDemo">注册</button>
+            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+        </div>
+    </div>
+</form>
+<script>
+    //JavaScript代码区域
+    layui.use(['element', 'layer', 'form',  'table'], function () {
+        var element = layui.element;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var $ = layui.$;
+
+        //自定义验证规则
+        form.verify({
+            account: [
+                /^\d{6}$/
+                , '账号格式有误'
+            ]
+            , password: [
+                /^[a-zA-Z0-9]{3,12}$/
+                , '密码必须3到12位，且不能出现空格'
+            ]
+
+            , password1: [
+                /^[a-zA-Z0-9]{3,12}$/
+                , '密码必须3到12位，且不能出现空格'
+            ]
+            ,title: function(value){
+                if(value.length <= 0){
+                    return '内容不能为空';
+                }
+            }
+        });
+
+        //添加表单失焦事件
+        //验证表单
+        $('#idNumber').blur(function() {
+            //alert(user);
+            $.ajax({
+                type:'post',
+                url:'findByIdNumber1.do',
+                dataType:'json',
+                data:{idNumber:$('#idNumber').val()},
+                //验证用户名是否可用
+                success:function(data){
+                    if (data.code == 0) {
+                        layer.msg(data.info);
+                    } else {
+                        layer.msg(data.info);
+                    }
+                }
+            })
+        });
+
+        //验证两次密码是否一致
+        $('#rpwd').blur(function () {
+            if ($('#password').val() != $('#rpwd').val()) {
+                layer.msg('两次输入密码不一致!');
+            } else {
+                layer.msg('密码一致');
+            }
+        });
+
+        //添加表单监听事件,提交注册信息
+        form.on('submit(formDemo)', function() {
+            $.ajax({
+                url:'addUser.do',
+                type:'post',
+                dataType:'json',
+                data:{
+                    idNumber:$('#idNumber').val(),
+                    userName:$('#userName').val(),
+                    password:$('#password').val()
+                },
+                success:function(data){
+                    if (data.code == 0) {
+                        table.reload('test');
+                        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        parent.layer.close(index);
+                    }else {
+                        layer.msg('注册失败');
+                    }
+                }
+            });
+            //防止页面跳转
+            return false;
+        });
+    });
+
+</script>
+
+</body>
+</html>

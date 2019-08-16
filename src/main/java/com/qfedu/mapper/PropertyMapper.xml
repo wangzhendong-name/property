@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qfedu.dao.PropertyDao">
+    <resultMap id="vUserInfoMap" type="com.qfedu.pojo.VUserInfo">
+        <id column="id" property="id"/>
+        <result column="projectName" property="projectName" />
+        <result column="housingType" property="housingType" />
+        <result column="usableArea" property="usableArea" />
+        <result column="constructionTime" property="constructionTime"/>
+        <association property="user" resultMap="com.qfedu.dao.UserDao.userMap"></association>
+    </resultMap>
+
+    <select id="findAll" parameterType="user" resultMap="vUserInfoMap">
+        select * from property.property p
+        inner join property.user u
+        on p.id = u.uid
+        <where>
+            <if test="idNumber != null">
+                u.idNumber = #{idNumber}
+            </if>
+            <if test="userName != null">
+                or u.userName = #{userName}
+            </if>
+        </where>
+    </select>
+
+</mapper>
